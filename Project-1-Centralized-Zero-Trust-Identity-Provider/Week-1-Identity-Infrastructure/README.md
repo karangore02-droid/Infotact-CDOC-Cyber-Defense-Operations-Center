@@ -1,125 +1,173 @@
-Week 1 – Identity Infrastructure
-Project
+# 🔐 Project 1 – Centralized Zero Trust Identity Provider  
+## Week 1 – Infrastructure Deployment
 
-Centralized Zero Trust Identity Provider (IAM)
+Part of the **Infotact CDOC – Cyber Defense Operations Center**
 
-Objective
+This phase establishes the foundational Identity Infrastructure required for a Zero Trust architecture.
 
-Deploy and configure a containerized Identity Infrastructure using:
+---
 
-Keycloak
+# 🎯 Objective
 
-PostgreSQL
+Deploy a production-structured Identity Provider using:
 
-Docker
+- Keycloak (Identity & Access Management)
+- PostgreSQL (Relational Database Backend)
+- Docker (Containerization Platform)
 
-The goal was to establish a functional authentication and authorization foundation for Zero Trust architecture.
+The goal of Week 1 was to build a secure, containerized IAM foundation ready for application integration in Week 2.
 
-1. Environment Preparation
+---
+
+# 🏗️ Infrastructure Architecture
+
+## Identity Layer Components
+
+- Keycloak Server (Dockerized)
+- PostgreSQL 15 Backend
+- Dedicated Docker Network (`keycloak-net`)
+- Persistent Docker Volume (`pgdata`)
+
+### Logical Flow
+
+User → Keycloak (Authentication & Authorization) → PostgreSQL (Data Persistence)
+
+---
+
+# ⚙️ Environment Preparation
 
 Operating System: Kali Linux
 
-Docker Installation
+### Docker Installation
+
+```bash
 sudo apt update
 sudo apt install docker.io -y
 sudo systemctl enable docker
 sudo systemctl start docker
-Docker Compose Installation
+```
+
+### Docker Compose Installation
+
+```bash
 sudo apt install docker-compose -y
-Docker Permission Configuration
+```
+
+### Docker Permission Configuration
+
+```bash
 sudo usermod -aG docker $USER
 newgrp docker
-2. Architecture Overview
+```
 
-Components:
+---
 
-Keycloak (Identity Provider)
+# 🐳 Docker Compose Configuration
 
-PostgreSQL 15 (Database)
+Services Deployed:
 
-Custom Docker Network (keycloak-net)
+- postgres:15
+- quay.io/keycloak/keycloak:24.0.1
 
-Persistent Docker Volume (pgdata)
+Keycloak launched in development mode:
 
-Flow:
-
-User → Keycloak → PostgreSQL (store realm & user data)
-
-3. Docker Compose Configuration
-
-Services:
-
-postgres:15
-
-quay.io/keycloak/keycloak:24.0.1
-
-Keycloak started in development mode using:
-
+```yaml
 command: start-dev
+```
 
 Port Mapping:
 
+```yaml
 8080 → 8080
-4. Deployment
+```
+
+---
+
+# 🚀 Deployment Execution
+
+```bash
 docker-compose up -d
+```
 
 Verification:
 
+```bash
 docker ps
 docker logs keycloak
+```
 
 Admin Console:
 
+```
 http://localhost:8080/admin
-5. Identity Configuration
-Realm Created
+```
 
+---
+
+# 🔑 Identity Configuration
+
+## Realm Created
 Infotact
 
-Roles Created
+## Roles Defined
+- Admin
+- Developer
+- Viewer
 
-Admin
+## Groups Created
+- Admin_Group
+- Dev_Group
+- Viewer_Group
 
-Developer
+Role-to-group mappings enforced for structured access control.
 
-Viewer
+---
 
-Groups Created
+# 👤 Test User Validation
 
-Admin_Group
-
-Dev_Group
-
-Viewer_Group
-
-Role-to-Group mapping implemented.
-
-6. Test User
-
-Username: devuser
-Password: user123
-
-User assigned to Dev_Group.
+User Created:
+- Username: devuser
+- Group: /Dev_Group
+- Email verification enabled
+- Permanent password configured
 
 Login URL:
 
+```
 http://localhost:8080/realms/Infotact/account
-7. Outcome
+```
 
-Functional Identity Provider deployed
+Authentication and profile update flow validated successfully.
 
-Role-Based Access Control configured
+---
 
-User onboarding tested successfully
+# 🛡️ Security Considerations (Week 1 Scope)
 
-Foundation ready for application integration (Week 2)
+- Container isolation via Docker network
+- Database credentials configured via environment variables
+- Persistent volume for data durability
+- Development mode clearly identified (not production-ready)
 
-8. Lessons Learned
+---
 
-Docker containers persist independently of compose files
+# 📊 Outcome
 
-Proper directory structuring is critical before version control
+✔ Functional Identity Provider deployed  
+✔ Role-Based Access Control structure implemented  
+✔ User onboarding validated  
+✔ Infrastructure prepared for OIDC application integration  
 
-Volume persistence must be handled carefully
+Week 1 establishes the Identity foundation for:
 
-Development mode should not be used in production
+- Single Sign-On (SSO)
+- Conditional Access Policies
+- Multi-Factor Authentication (MFA)
+- Advanced Policy Engineering (Week 3)
+- Auditing & Hardening (Week 4)
+
+---
+
+# 🚀 Next Phase
+
+➡ Week 2 – Application Integration  
+OIDC Client registration and protected application integration.
