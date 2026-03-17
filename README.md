@@ -156,11 +156,12 @@ Refer to individual project folders for detailed setup instructions.
 ---
 
 # 👨‍💻 Author
+~karangore02-droid
 ~artfield0
 ~JoshiNirmi-28
 ~nishita1127
 ~khandelwalakshita72-ai
-~karangore02-droid
+
 
 – Infotact Internship  
 Specialization: Identity Security & Detection Engineering
