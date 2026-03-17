@@ -1,10 +1,12 @@
-import jwt
 import os
+import jwt
 from flask import Flask, redirect, url_for, session
 from authlib.integrations.flask_client import OAuth
 
 app = Flask(__name__)
-app.secret_key = "super-secret-session-key"
+
+# Session secret
+app.secret_key = os.urandom(24)
 
 # Load environment variables
 CLIENT_ID = os.environ.get("CLIENT_ID")
@@ -41,26 +43,25 @@ def login():
 # ---------------- AUTH CALLBACK ----------------
 @app.route("/auth")
 def auth():
+
     token = keycloak.authorize_access_token()
 
-    # Store full token response
-    session["user"] = token
-
-    # ID token claims are already validated internally
-    session["userinfo"] = token.get("userinfo", {})
+    session["access_token"] = token["access_token"]
+    session["id_token"] = token["id_token"]
 
     return redirect("/protected")
 
 
-# ---------------- PROTECTED (RBAC READY) ----------------
+# ---------------- PROTECTED PAGE ----------------
 @app.route("/protected")
 def protected():
-    if "user" not in session:
+
+    if "access_token" not in session:
         return redirect("/")
 
-    access_token = session["user"].get("access_token")
+    access_token = session["access_token"]
 
-    # Decode WITHOUT signature verification (lab use only)
+    # Decode token (lab only, signature verification disabled)
     decoded = jwt.decode(access_token, options={"verify_signature": False})
 
     roles = decoded.get("realm_access", {}).get("roles", [])
@@ -69,23 +70,22 @@ def protected():
         return "Access Denied – Admin Role Required", 403
 
     return f"""
-        <h1>Protected Page</h1>
-        <p>Welcome {decoded.get('preferred_username')}</p>
-        <p>Role: admin</p>
-        <a href="/token">View Token</a><br><br>
-        <a href="/logout">Logout</a>
+    <h1>Protected Page</h1>
+    <p>Welcome {decoded.get('preferred_username')}</p>
+    <p>Role: admin</p>
+    <a href="/token">View Token</a><br><br>
+    <a href="/logout">Logout</a>
     """
 
 
 # ---------------- TOKEN VIEW ----------------
-import jwt
-
 @app.route("/token")
 def token():
-    if "user" not in session:
+
+    if "access_token" not in session:
         return redirect("/")
 
-    access_token = session["user"]["access_token"]
+    access_token = session["access_token"]
 
     decoded = jwt.decode(
         access_token,
@@ -98,12 +98,18 @@ def token():
 # ---------------- LOGOUT ----------------
 @app.route("/logout")
 def logout():
+
+    id_token = session.get("id_token")
+
     session.clear()
+
     return redirect(
-        f"{AUTH_SERVER_URL}/realms/{REALM}/protocol/openid-connect/logout"
-        f"?post_logout_redirect_uri=http://localhost:5000"
+        f"http://localhost:8080/realms/{REALM}/protocol/openid-connect/logout"
+        f"?id_token_hint={id_token}"
+        f"&post_logout_redirect_uri=http://localhost:5000"
     )
 
 
+# ---------------- RUN APP ----------------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
